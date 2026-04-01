@@ -45,7 +45,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
 
         self.args = args
 
-        self.ignore_decorators: List[str] = []
+        self.ignore_decorators: List[str] = self.args.ignore_names_if_decorated_with or []
 
         verbose = False
         # verbose = args.verbose
