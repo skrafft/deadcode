@@ -307,7 +307,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
         "%(my_var)s" % locals()
         """
         if isinstance(node.left, ast.Constant) and isinstance(node.op, ast.Mod) and self._is_locals_call(node.right):
-            self.used_names |= set(re.findall(r'%\((\w+)\)', node.left.s))
+            self.used_names |= set(re.findall(r'%\((\w+)\)', node.left.value))
 
     def visit_Call(self, node: ast.Call) -> None:
         # Count getattr/hasattr(x, "some_attr", ...) as usage of some_attr.
@@ -317,7 +317,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
         ):
             attr_name_arg = node.args[1]
             if isinstance(attr_name_arg, ast.Constant):
-                self.add_used_name(attr_name_arg.s)
+                self.add_used_name(attr_name_arg.value)
 
         # Parse variable names in new format strings:
         # "{my_var}".format(**locals())
@@ -428,7 +428,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
             assert isinstance(node.value, (ast.List, ast.Tuple))
             for elt in node.value.elts:
                 if isinstance(elt, ast.Constant):
-                    self.add_used_name(elt.s)
+                    self.add_used_name(elt.value)
 
     def visit_While(self, node: ast.While) -> None:
         self._handle_conditional_node(node, 'while')
