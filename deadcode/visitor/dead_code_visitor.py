@@ -306,7 +306,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
 
         "%(my_var)s" % locals()
         """
-        if isinstance(node.left, ast.Str) and isinstance(node.op, ast.Mod) and self._is_locals_call(node.right):
+        if isinstance(node.left, ast.Constant) and isinstance(node.op, ast.Mod) and self._is_locals_call(node.right):
             self.used_names |= set(re.findall(r'%\((\w+)\)', node.left.s))
 
     def visit_Call(self, node: ast.Call) -> None:
@@ -316,14 +316,14 @@ class DeadCodeVisitor(ast.NodeVisitor):
             or (node.func.id == 'hasattr' and len(node.args) == 2)
         ):
             attr_name_arg = node.args[1]
-            if isinstance(attr_name_arg, ast.Str):
+            if isinstance(attr_name_arg, ast.Constant):
                 self.add_used_name(attr_name_arg.s)
 
         # Parse variable names in new format strings:
         # "{my_var}".format(**locals())
         if (
             isinstance(node.func, ast.Attribute)
-            and isinstance(node.func.value, ast.Str)
+            and isinstance(node.func.value, ast.Constant)
             and node.func.attr == 'format'
             and any(kw.arg is None and self._is_locals_call(kw.value) for kw in node.keywords)
         ):
@@ -427,7 +427,7 @@ class DeadCodeVisitor(ast.NodeVisitor):
         if _assigns_special_variable__all__(node):
             assert isinstance(node.value, (ast.List, ast.Tuple))
             for elt in node.value.elts:
-                if isinstance(elt, ast.Str):
+                if isinstance(elt, ast.Constant):
                     self.add_used_name(elt.s)
 
     def visit_While(self, node: ast.While) -> None:
